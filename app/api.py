@@ -67,3 +67,12 @@ async def user_login(user: UserLoginSchema = Body(...)):
     return {
         "error": "Usuário e/ou senha inválidos"
     }
+
+
+@app.post("/validate-token", dependencies=[Depends(JWTBearer())], tags=[""])
+async def validate_token():
+    return {
+        "data": "Token válido"
+    }
+
+

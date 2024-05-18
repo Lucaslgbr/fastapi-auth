@@ -1,0 +1,15 @@
+ version: "1"
+ services:
+    tutorial:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      ports:
+        - "8000:8000"
+      volumes:
+        - .:/app
+        - /app/.venv
+      command:
+              sh -c "
+              python main.py
+              "

@@ -2,7 +2,6 @@ version: "1"
 networks:
   services:
     external: true
-
 services:
   auth:
     build:

@@ -3,11 +3,25 @@ from fastapi import FastAPI, Body, Depends
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import sign_jwt
 from app.model import UserSchema, UserLoginSchema
+from fastapi.middleware.cors import CORSMiddleware
 
 
 users = []
 
 app = FastAPI()
+
+origins = [
+    "*"
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # helpers

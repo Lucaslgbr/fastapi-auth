@@ -1,19 +1,20 @@
-from fastapi import FastAPI, Body, Depends
-
+from fastapi import FastAPI, Body, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from .crud import create_user, get_user_by_email
+from .schemas import UserCreate, UserLoginSchema
+from .database import SessionLocal, engine
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import sign_jwt
-from app.model import UserSchema, UserLoginSchema
+from .model import User
 from fastapi.middleware.cors import CORSMiddleware
-
-
-users = []
+from app.database import Base, engine
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 origins = [
     "*"
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,42 +24,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# helpers
-
-def check_user(data: UserLoginSchema):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-    return False
-
-
-# route handlers
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/", tags=["root"])
-async def read_root() -> dict:
+async def read_root():
     return {"message": "Acesse /docs para visualizar a documentação"}
 
 
 @app.post("/signup", tags=["user"])
-async def create_user(user: UserSchema = Body(...)):
-    users.append(user) # replace with db call, making sure to hash the password first
-    return sign_jwt(user.email)
-
+async def signup(user: UserCreate, db: Session = Depends(get_db)):
+    db_user = get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email já registrado")
+    user_data = UserCreate(fullname=user.fullname, email=user.email, password=user.password)
+    return sign_jwt(create_user(db=db, user_data=user_data).email)
 
 @app.post("/auth", tags=["user"])
-async def user_login(user: UserLoginSchema = Body(...)):
-    if check_user(user):
-        return sign_jwt(user.email)
-    return {
-        "error": "Usuário e/ou senha inválidos"
-    }
+async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
+    db_user = get_user_by_email(db, email=user.email)
+    print(db_user)
+    if db_user and db_user.password == user.password:
+        return sign_jwt(db_user.email)
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário e/ou senha inválidos")
 
 
 @app.post("/validate-token", dependencies=[Depends(JWTBearer())], tags=[""])
 async def validate_token():
-    return {
-        "data": "Token válido"
-    }
-
-
+    return {"data": "Token válido"}

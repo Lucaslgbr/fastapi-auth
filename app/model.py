@@ -1,28 +1,10 @@
-from pydantic import BaseModel, Field, EmailStr
+from sqlalchemy import Column, Integer, String
+from .database import Base
 
+class User(Base):
+    __tablename__ = "users"
 
-class UserSchema(BaseModel):
-    fullname: str = Field(...)
-    email: EmailStr = Field(...)
-    password: str = Field(...)
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "fullname": "André Cristen",
-                "email": "admin@admin.com",
-                "password": "teste"
-            }
-        }
-
-class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(...)
-    password: str = Field(...)
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "admin@admin.com",
-                "password": "teste"
-            }
-        }
+    id = Column(Integer, primary_key=True, index=True)
+    fullname = Column(String, index=True)
+    email = Column(String, unique=True, index=True)
+    password = Column(String)

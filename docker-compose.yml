@@ -1,12 +1,10 @@
-version: "1"
-networks:
-  services:
-    external: true
+version: "3.8"  
+
 services:
   auth:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  
     ports:
       - "8000:8000"
     volumes:
@@ -16,7 +14,24 @@ services:
       - services
     expose:
       - 8000
-    command: >
-      sh -c "
-      python main.py
-      "
+    command: uvicorn main:app --host 0.0.0.0 --port 8000  
+
+  authdb:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - services
+
+networks:
+  services:
+    external: true
+
+volumes:
+  postgres_data:

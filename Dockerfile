@@ -5,7 +5,7 @@ WORKDIR /code
 
 COPY requirements.txt /code/requirements.txt
 
-RUN  pip install ---progress-bar off -r /code/requirements.txt
+RUN  pip install --progress-bar off -r /code/requirements.txt
 
 COPY . .
 

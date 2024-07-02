@@ -6,10 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 WORKDIR /code
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
+    && apt-get update
+
+RUN apt-get install -y --no-install-recommends postgresql-client \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 COPY ./requirements.txt ./requirements.txt
 RUN pip install --upgrade pip \

@@ -6,9 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 WORKDIR /code
 
-RUN apt-get clean && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        postgresql-client \
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt ./requirements.txt
